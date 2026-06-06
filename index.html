@@ -378,6 +378,18 @@ body::before{
   padding:0.18rem 0.5rem;border-radius:var(--r-pill);white-space:nowrap;flex-shrink:0;
 }
 
+/* list-loading indicator in dropdown */
+.dd-loading{
+  padding:0.9rem 1rem;
+  font-size:0.7rem;
+  color:var(--tx-sec);
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+}
+.dd-spin{display:inline-block;animation:tspin 0.7s linear infinite}
+@keyframes tspin{to{transform:rotate(360deg)}}
+
 /* ─────────────────────────────────────────
    TERMINAL LOADER
 ───────────────────────────────────────── */
@@ -411,7 +423,6 @@ body::before{
 .tline.show{opacity:1}
 .tline .p{color:var(--acc)}
 .tline .spin{display:inline-block;animation:tspin 0.7s linear infinite}
-@keyframes tspin{to{transform:rotate(360deg)}}
 
 /* ─────────────────────────────────────────
    ERROR
@@ -583,7 +594,7 @@ body::before{
   padding:0.85rem 1.1rem;
   background:var(--bg2);
   border-bottom:1px solid var(--br-dim);
-  min-height:1px; /* collapses cleanly when empty */
+  min-height:1px;
 }
 .pill{
   font-size:0.6rem;font-weight:700;
@@ -839,15 +850,79 @@ const PRAISES = [
 ];
 
 // ─────────────────────────────────────────
-//  API
+//  STRICT LIST CACHE
+//  Fetched once; searched client-side forever
+// ─────────────────────────────────────────
+const STRICT_LIST_URL = 'https://tokens.jup.ag/tokens?tags=strict';
+let strictTokens = null;   // null = not loaded yet, [] = loaded (may be empty on error)
+let strictLoading = false;
+let strictCallbacks = [];  // queued callbacks waiting for the list
+
+/**
+ * Fetch the strict list exactly once and cache it.
+ * Calls cb(tokensArray) when ready (or on error, cb([])).
+ */
+function ensureStrictList(cb) {
+  if (strictTokens !== null) { cb(strictTokens); return; }
+  if (cb) strictCallbacks.push(cb);
+  if (strictLoading) return;
+  strictLoading = true;
+
+  fetch(STRICT_LIST_URL)
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => {
+      strictTokens = Array.isArray(data) ? data : [];
+    })
+    .catch(() => { strictTokens = []; })
+    .finally(() => {
+      strictLoading = false;
+      const cbs = strictCallbacks.slice();
+      strictCallbacks = [];
+      cbs.forEach(fn => fn(strictTokens));
+    });
+}
+
+/**
+ * Search the cached strict list client-side.
+ * Matching priority: exact symbol > symbol starts-with > name contains
+ * Returns up to 8 results.
+ */
+function searchStrict(q) {
+  if (!strictTokens || !strictTokens.length) return [];
+  const up = q.trim().toUpperCase();
+  if (!up) return [];
+
+  const exact = [];
+  const starts = [];
+  const contains = [];
+
+  for (const t of strictTokens) {
+    const sym  = (t.symbol  || '').toUpperCase();
+    const name = (t.name    || '').toUpperCase();
+    if (sym === up) {
+      exact.push(t);
+    } else if (sym.startsWith(up) || name.startsWith(up)) {
+      starts.push(t);
+    } else if (sym.includes(up) || name.includes(up)) {
+      contains.push(t);
+    }
+    // Early exit — we have enough
+    if (exact.length + starts.length + contains.length >= 40) break;
+  }
+
+  return [...exact, ...starts, ...contains].slice(0, 8);
+}
+
+// ─────────────────────────────────────────
+//  API HELPERS  (price + single-mint lookup)
 // ─────────────────────────────────────────
 const API  = 'https://api.jup.ag';
 const LITE = 'https://lite-api.jup.ag';
 
 const isMint = s => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s.trim());
-const rnd  = a => a[Math.floor(Math.random() * a.length)];
-const wait = ms => new Promise(r => setTimeout(r, ms));
-const esc  = s => { const d = document.createElement('div'); d.appendChild(document.createTextNode(s||'')); return d.innerHTML; };
+const rnd    = a => a[Math.floor(Math.random() * a.length)];
+const wait   = ms => new Promise(r => setTimeout(r, ms));
+const esc    = s => { const d = document.createElement('div'); d.appendChild(document.createTextNode(s||'')); return d.innerHTML; };
 
 function fUSD(n) {
   if (n == null || isNaN(n)) return '—';
@@ -873,22 +948,21 @@ async function jFetch(path, useLite) {
   return r.json();
 }
 
-async function searchTok(q) {
-  try {
-    const d = await jFetch('/tokens/v2/search?query=' + encodeURIComponent(q));
-    return Array.isArray(d) ? d : [];
-  } catch {
-    try {
-      const d = await jFetch('/tokens/v1/search?query=' + encodeURIComponent(q), true);
-      return Array.isArray(d) ? d : [];
-    } catch { return []; }
-  }
-}
-
+/**
+ * Resolve a raw mint address to a token object.
+ * First checks the cached strict list (instant, zero network),
+ * then falls back to the v2 metadata endpoint.
+ */
 async function mintInfo(mint) {
+  // 1. Check strict list cache first (free, instant)
+  if (strictTokens) {
+    const found = strictTokens.find(t => (t.address || t.id) === mint);
+    if (found) return normalise(found);
+  }
+  // 2. Fallback: token metadata endpoint (works for any mint)
   try {
-    const d = await jFetch('/tokens/v2/search?query=' + mint);
-    if (Array.isArray(d) && d.length) return d[0];
+    const d = await jFetch('/tokens/v2/token/' + mint);
+    if (d && (d.address || d.id)) return normalise(d);
   } catch {}
   try {
     const d = await jFetch('/tokens/v1/token/' + mint, true);
@@ -897,14 +971,40 @@ async function mintInfo(mint) {
   return null;
 }
 
+/**
+ * Normalise a strict-list token object into the shape the render
+ * function expects (mirrors the v2 search response shape).
+ */
+function normalise(t) {
+  return {
+    id:                  t.address || t.id,
+    address:             t.address || t.id,
+    name:                t.name,
+    symbol:              t.symbol,
+    icon:                t.logoURI || t.icon,
+    decimals:            t.decimals,
+    holderCount:         t.holderCount   ?? null,
+    organicScore:        t.organicScore  ?? null,
+    organicScoreLabel:   t.organicScoreLabel ?? null,
+    isVerified:          true,   // everything on the strict list is verified
+    tags:                t.tags  || ['strict'],
+    usdPrice:            t.usdPrice ?? null,
+    liquidity:           t.liquidity ?? null,
+    audit:               t.audit ?? {},
+    stats24h:            t.stats24h ?? { priceChange: null, buyVolume: null, sellVolume: null },
+    daily_volume:        t.daily_volume ?? null,
+  };
+}
+
 function v1to2(t) {
   return {
-    id: t.address, name: t.name, symbol: t.symbol, icon: t.logoURI,
-    decimals: t.decimals, holderCount: null, organicScore: null,
-    organicScoreLabel: null, isVerified: (t.tags||[]).includes('verified'),
+    id: t.address, address: t.address, name: t.name, symbol: t.symbol,
+    icon: t.logoURI, decimals: t.decimals,
+    holderCount: null, organicScore: null, organicScoreLabel: null,
+    isVerified: (t.tags||[]).includes('verified'),
     tags: t.tags||[], usdPrice: null, liquidity: null, audit: {},
     stats24h: { priceChange: null, buyVolume: null, sellVolume: null },
-    _v1: true, _daily: t.daily_volume
+    daily_volume: t.daily_volume ?? null,
   };
 }
 
@@ -918,8 +1018,8 @@ async function priceOf(mint) {
 // ─────────────────────────────────────────
 //  STATE
 // ─────────────────────────────────────────
-let ddData = [];
-let debounce = null;
+let ddData    = [];
+let debounce  = null;
 let currentTok = null;
 
 // ─────────────────────────────────────────
@@ -929,25 +1029,21 @@ function renderDD(tokens) {
   const el = document.getElementById('dd');
   if (!tokens || !tokens.length) { el.classList.remove('open'); return; }
 
-  const strict = tokens.filter(t => (t.tags||[]).some(x => x==='strict'||x==='verified'));
-  const rest   = tokens.filter(t => !(t.tags||[]).some(x => x==='strict'||x==='verified'));
-  ddData = [...strict, ...rest].slice(0, 8);
+  ddData = tokens.slice(0, 8);
 
-  let h = '<div class="dd-head">Select token — verified/strict first</div>';
+  let h = '<div class="dd-head">Select token — Jupiter strict list</div>';
   ddData.forEach((t, i) => {
-    const isStrict = (t.tags||[]).includes('strict');
-    const isVer    = t.isVerified || (t.tags||[]).includes('verified');
-    const sym      = (t.symbol||'?').slice(0,4).toUpperCase();
-    const src      = t.icon || t.logoURI || '';
-    const bdg      = isStrict ? `<span class="badge-strict">STRICT</span>`
-                   : isVer    ? `<span class="badge-strict">VERIFIED</span>` : '';
+    const sym = (t.symbol||'?').slice(0,4).toUpperCase();
+    const src = t.icon || t.logoURI || '';
+    // Every result from the strict list is verified; badge always shown
+    const bdg = `<span class="badge-strict">STRICT</span>`;
     h += `<div class="dd-row" onclick="pick(${i})">
       <div class="dd-avatar">
         ${src ? `<img src="${esc(src)}" alt="${sym}" onerror="this.parentNode.textContent='${sym}'"/>` : sym}
       </div>
       <div class="dd-info">
         <div class="dd-name">${esc(t.name||t.symbol||'Unknown')}</div>
-        <div class="dd-addr">${short(t.id||t.address)}</div>
+        <div class="dd-addr">${short(t.address||t.id||'')}</div>
       </div>
       ${bdg}
     </div>`;
@@ -956,15 +1052,21 @@ function renderDD(tokens) {
   el.classList.add('open');
 }
 
+function showDDLoading() {
+  const el = document.getElementById('dd');
+  el.innerHTML = '<div class="dd-loading"><span class="dd-spin">⠋</span> Loading Jupiter strict list…</div>';
+  el.classList.add('open');
+}
+
 function hideDD() { document.getElementById('dd').classList.remove('open'); }
 
 function pick(i) {
   hideDD();
-  if (ddData[i]) process(ddData[i]);
+  if (ddData[i]) process(normalise(ddData[i]));
 }
 
 // ─────────────────────────────────────────
-//  FLOW
+//  MAIN FLOW
 // ─────────────────────────────────────────
 async function go() {
   const raw = document.getElementById('q').value.trim();
@@ -973,24 +1075,38 @@ async function go() {
   clearTimeout(debounce);
 
   if (isMint(raw)) {
-    await load(['Resolving mint address...','Querying Jupiter Token API v2...','Fetching live price data...','Running roast engine...']);
+    // ── Path A: raw mint address → API lookup ──
+    await load(['Resolving mint address…','Querying Jupiter Token API…','Fetching live price data…','Running roast engine…']);
     const tok = await mintInfo(raw);
     hideLoad();
     if (!tok) { showErr("Token not found on Jupiter. Paste the exact mint address or try a ticker."); return; }
     await process(tok);
   } else {
-    await load(['Scanning Jupiter strict list...','Matching ticker symbol...','Sorting by verification tier...']);
-    const res = await searchTok(raw);
-    hideLoad();
-    if (!res.length) { showErr(`No tokens found for "${esc(raw)}". Try the full mint address for unverified tokens.`); return; }
-    if (res.length === 1) { await process(res[0]); }
-    else { renderDD(res); }
+    // ── Path B: ticker → client-side strict list search ──
+    if (strictTokens === null) {
+      // List not fetched yet; show loader while we grab it
+      await load(['Loading Jupiter strict list…','Filtering by ticker…']);
+      await new Promise(resolve => ensureStrictList(resolve));
+      hideLoad();
+    }
+
+    const results = searchStrict(raw);
+
+    if (!results.length) {
+      showErr(`"${esc(raw)}" not found on the Jupiter strict list. For unverified tokens, paste the full mint address (32-44 chars).`);
+      return;
+    }
+    if (results.length === 1) {
+      await process(normalise(results[0]));
+    } else {
+      renderDD(results.map(normalise));
+    }
   }
 }
 
 async function process(tok) {
   hideErr(); hideCard();
-  await load(['Fetching live price data...','Analyzing organic health...','Consulting the degen oracle...','Writing your verdict...']);
+  await load(['Fetching live price data…','Analyzing organic health…','Consulting the degen oracle…','Writing your verdict…']);
   const mint = tok.id || tok.address;
   const px   = mint ? await priceOf(mint) : null;
   await wait(500);
@@ -1003,15 +1119,15 @@ async function process(tok) {
 //  SCORING
 // ─────────────────────────────────────────
 function score(tok, px) {
-  const org    = tok.organicScore ?? null;
-  const isSus  = !!(tok.audit && tok.audit.isSus) || !!(tok.tags && tok.tags.includes('suspicious'));
-  const isVer  = tok.isVerified || (tok.tags||[]).some(x => x==='verified'||x==='strict');
-  let pc       = null;
+  const org   = tok.organicScore ?? null;
+  const isSus = !!(tok.audit && tok.audit.isSus) || !!(tok.tags && tok.tags.includes('suspicious'));
+  const isVer = tok.isVerified || (tok.tags||[]).some(x => x==='verified'||x==='strict');
+  let pc      = null;
   if (px && px.priceChange24h != null) pc = px.priceChange24h;
   else if (tok.stats24h && tok.stats24h.priceChange != null) pc = tok.stats24h.priceChange;
-  const vol24  = tok.stats24h
+  const vol24 = tok.stats24h
     ? ((tok.stats24h.buyVolume||0) + (tok.stats24h.sellVolume||0))
-    : (tok._daily || null);
+    : (tok.daily_volume || null);
 
   let s = 0;
   if (org != null) {
@@ -1064,7 +1180,7 @@ function render(tok, px) {
   // Stats
   const vEl = document.getElementById('s-vol');
   vEl.textContent = fUSD(v.vol24);
-  vEl.className = 'stat-val' + (v.vol24 != null ? v.vol24 > 1e6 ? ' acc' : v.vol24 < 1e4 ? ' fire' : '' : '');
+  vEl.className   = 'stat-val' + (v.vol24 != null ? v.vol24 > 1e6 ? ' acc' : v.vol24 < 1e4 ? ' fire' : '' : '');
 
   const hEl = document.getElementById('s-hold');
   hEl.textContent = fNum(tok.holderCount);
@@ -1109,10 +1225,10 @@ function render(tok, px) {
   if (v.isVer) pills.push(['pill-ok','✓ Verified']);
   if ((tok.tags||[]).includes('strict')) pills.push(['pill-ok','Strict List']);
   if (tok.audit) {
-    if (tok.audit.mintAuthorityDisabled === false)  pills.push(['pill-warn','Mint Auth Active']);
-    if (tok.audit.mintAuthorityDisabled === true)   pills.push(['pill-info','Mint Auth Revoked']);
-    if (tok.audit.freezeAuthorityDisabled === false) pills.push(['pill-warn','Freeze Auth Active']);
-    if (tok.audit.freezeAuthorityDisabled === true)  pills.push(['pill-info','Freeze Auth Revoked']);
+    if (tok.audit.mintAuthorityDisabled === false)   pills.push(['pill-warn','Mint Auth Active']);
+    if (tok.audit.mintAuthorityDisabled === true)    pills.push(['pill-info','Mint Auth Revoked']);
+    if (tok.audit.freezeAuthorityDisabled === false)  pills.push(['pill-warn','Freeze Auth Active']);
+    if (tok.audit.freezeAuthorityDisabled === true)   pills.push(['pill-info','Freeze Auth Revoked']);
     if (tok.audit.topHoldersPercentage != null && tok.audit.topHoldersPercentage > 40)
       pills.push(['pill-warn',`Top 10 hold ${tok.audit.topHoldersPercentage.toFixed(0)}%`]);
   }
@@ -1126,15 +1242,20 @@ function render(tok, px) {
 
   // Share button
   wireShare(tok, v, vMsg.textContent);
-  card.classList.add('on');
 }
 
 function wireShare(tok, v, msg) {
   const ticker  = tok.symbol ? `$${tok.symbol}` : 'this token';
   const orgLine = v.org != null ? `Organic Score: ${v.org.toFixed(0)}/100. ` : '';
   const emoji   = v.isPraise ? '🟩' : '🔥';
-  const snippet = msg.slice(0, 100) + (msg.length > 100 ? '…' : '');
-  const tweet   = `${emoji} ${ticker} just got judged by the Degen Roast Machine.\n${orgLine}"${snippet}"\n\nhttps://compoundingly.com/tools/degen-roast/`;
+  const verdict = v.isPraise ? 'CHAD BAG DETECTED' : 'FULLY COOKED';
+  // Dynamic, punchy CT-native tweet
+  const snippet = msg.length > 120 ? msg.slice(0, 120) + '…' : msg;
+  const tweet =
+    `${emoji} ${ticker} just got roasted by the Degen Roast Machine.\n` +
+    `${orgLine}Verdict: ${verdict}\n\n` +
+    `"${snippet}"\n\n` +
+    `How cooked is YOUR bag? 👇\nhttps://compoundingly.com/tools/degen-roast/`;
   document.getElementById('btn-share').onclick = () =>
     window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(tweet), '_blank', 'noopener,noreferrer');
 }
@@ -1164,14 +1285,18 @@ function hideLoad() {
   document.getElementById('loader').classList.remove('on');
   document.getElementById('btn').disabled = false;
 }
-function hideCard() { document.getElementById('card').className = ''; }
+function hideCard() {
+  const c = document.getElementById('card');
+  c.className = '';
+  // Reset score bar so animation re-fires next time
+  document.getElementById('s-fill').style.width = '0%';
+}
 function showErr(m) { const e = document.getElementById('err'); e.textContent = '⚠ ' + m; e.classList.add('on'); }
 function hideErr()  { document.getElementById('err').classList.remove('on'); }
 
 function reset() {
   hideCard(); hideErr(); hideDD(); hideLoad();
   document.getElementById('q').value = '';
-  document.getElementById('s-fill').style.width = '0%';
   document.getElementById('q').focus();
   currentTok = null;
 }
@@ -1185,15 +1310,39 @@ document.getElementById('q').addEventListener('keydown', e => {
 });
 
 document.getElementById('q').addEventListener('input', e => {
-  const v = e.target.value.trim();
+  const val = e.target.value.trim();
   clearTimeout(debounce);
-  if (!v || v.length < 2 || isMint(v)) { hideDD(); return; }
-  debounce = setTimeout(async () => {
-    const res = await searchTok(v);
-    if (res && res.length > 1) renderDD(res);
-    else hideDD();
-  }, 400);
+
+  if (!val || val.length < 1) { hideDD(); return; }
+  if (isMint(val)) { hideDD(); return; }  // mint → no live dropdown
+
+  debounce = setTimeout(() => {
+    if (strictTokens === null) {
+      // List hasn't loaded yet: show a spinner and kick off the fetch
+      showDDLoading();
+      ensureStrictList(() => {
+        // Re-run the search once list is ready (only if input hasn't changed)
+        const current = document.getElementById('q').value.trim();
+        if (current && !isMint(current)) {
+          const res = searchStrict(current);
+          if (res.length) renderDD(res.map(normalise));
+          else hideDD();
+        } else {
+          hideDD();
+        }
+      });
+    } else {
+      const res = searchStrict(val);
+      if (res.length) renderDD(res.map(normalise));
+      else hideDD();
+    }
+  }, 150);  // 150 ms debounce — snappy on Seeker
 });
+
+// Pre-warm the strict list as soon as the user touches the input
+document.getElementById('q').addEventListener('focus', () => {
+  if (strictTokens === null) ensureStrictList(() => {});
+}, { once: true });
 
 document.addEventListener('click', e => {
   const dd = document.getElementById('dd');
