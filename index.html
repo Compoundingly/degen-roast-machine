@@ -5,12 +5,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
 <meta name="theme-color" content="#080810"/>
 <meta name="description" content="How cooked is your bag? Real on-chain data. Zero mercy."/>
-<meta property="og:title" content="Degen Roast Machine"/>
-<meta property="og:description" content="Enter any Solana token. Get roasted by real on-chain data. Zero mercy."/>
-<title>Degen Roast Machine</title>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Roast Machine"/>
+<meta property="og:title" content="Degen Roast Machine -- Compoundingly Tools"/>
+<meta property="og:description" content="Enter any Solana token. Get roasted by the Compoundingly Engine. Zero mercy."/>
+<title>Degen Roast Machine -- Compoundingly Tools</title>
+<script src="/js/gtm.js" defer></script>
+<link rel="manifest" href="/manifest.json"/>
+<link rel="apple-touch-icon" href="/icons/icon-192.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<link rel="icon" href="/favicon.ico"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:16px;-webkit-tap-highlight-color:transparent;scroll-behavior:smooth}
@@ -25,90 +33,335 @@ html{font-size:16px;-webkit-tap-highlight-color:transparent;scroll-behavior:smoo
   --amber:#ffaa00;--amber-dim:rgba(255,170,0,0.10);--amber-border:rgba(255,170,0,0.25);
   --f-mono:'Space Mono',monospace;--f-display:'Bebas Neue',sans-serif;
   --r:10px;--r-sm:6px;--r-pill:999px;--transition:0.18s cubic-bezier(0.4,0,0.2,1);
+  --sh-h:54px;
+  --sh-accent:#00ff99;
+  --sh-accent-dim:rgba(0,255,153,0.10);
+  --sh-accent-border:rgba(0,255,153,0.28);
 }
 body{background:var(--bg0);color:var(--tx-pri);font-family:var(--f-mono);min-height:100dvh;overflow-x:hidden}
 body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 50% -5%,rgba(0,255,153,0.05) 0%,transparent 65%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M40 0v40M0 40h40' stroke='rgba(255,255,255,0.025)' stroke-width='0.5' fill='none'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
-.shell{position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:0 1rem 5rem;max-width:680px;margin:0 auto}
-/* NAV */
-.nav{width:100%;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 0;border-bottom:1px solid var(--br-dim)}
-.nav-brand{display:flex;align-items:center;gap:0.55rem;text-decoration:none}
-.brand-gem{width:26px;height:26px;border-radius:5px;background:var(--acc);display:grid;place-items:center;flex-shrink:0}
-.brand-gem svg{display:block}
-.brand-name{font-family:var(--f-display);font-size:1.3rem;letter-spacing:0.05em;color:var(--tx-pri);line-height:1}
-.nav-pill{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--acc);border:1px solid var(--acc-border);background:var(--acc-dim);padding:0.28rem 0.65rem;border-radius:var(--r-pill);font-weight:700}
-/* HERO */
-.hero{width:100%;text-align:center;padding:2.5rem 0 2rem}
-.hero-kicker{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--tx-sec);margin-bottom:1rem}
-.blink{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--acc);animation:blink 1.4s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
-.hero-title{font-family:var(--f-display);font-size:clamp(3rem,13vw,5.5rem);line-height:0.92;letter-spacing:0.02em;color:var(--tx-pri);margin-bottom:0.6rem}
-.hero-title .flame{color:var(--fire);text-shadow:var(--fire-glow);display:inline-block;animation:flicker 3s ease-in-out infinite}
-@keyframes flicker{0%,100%{opacity:1;text-shadow:var(--fire-glow)}92%{opacity:1;text-shadow:var(--fire-glow)}93%{opacity:0.7;text-shadow:none}94%{opacity:1;text-shadow:var(--fire-glow)}97%{opacity:0.85}}
-.hero-sub{font-size:0.8rem;color:var(--tx-sec);line-height:1.7;max-width:340px;margin:0 auto}
-/* SEARCH */
+
+/* =========================================
+   SITE HEADER
+   ========================================= */
+.site-header{
+  position:sticky;top:0;z-index:500;
+  width:100%;height:var(--sh-h);
+  background:rgba(8,8,16,0.90);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--br-dim);
+}
+.site-header-inner{
+  max-width:1080px;margin:0 auto;
+  height:100%;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;gap:1rem;
+}
+.sh-brand{display:flex;align-items:center;gap:0.6rem;text-decoration:none;flex-shrink:0}
+.sh-brand:hover{text-decoration:none}
+.sh-logomark{
+  width:26px;height:26px;border-radius:5px;
+  background:var(--sh-accent);
+  display:grid;place-items:center;flex-shrink:0;
+  box-shadow:0 0 12px rgba(0,255,153,0.28);
+  transition:box-shadow var(--transition);
+}
+.sh-brand:hover .sh-logomark{box-shadow:0 0 22px rgba(0,255,153,0.45)}
+.sh-logomark svg{display:block}
+.sh-wordmark{
+  font-family:var(--f-display);font-size:1.15rem;
+  letter-spacing:0.07em;color:var(--tx-pri);line-height:1;white-space:nowrap;
+}
+.sh-wordmark-accent{color:var(--sh-accent)}
+.sh-nav{display:flex;align-items:center;flex:1;padding:0 12px}
+.sh-nav-links{display:flex;align-items:center;gap:4px}
+.sh-nav-item{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--f-mono);font-size:0.7rem;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--tx-sec);
+  padding:0.32rem 0.7rem;border-radius:6px;
+  text-decoration:none;background:transparent;
+  border:1px solid transparent;cursor:pointer;white-space:nowrap;
+  transition:color var(--transition),background var(--transition),border-color var(--transition);
+  line-height:1;
+}
+.sh-nav-item:hover,
+.sh-nav-item:focus-visible{color:var(--tx-pri);background:rgba(255,255,255,0.05);text-decoration:none}
+.sh-nav-roast[aria-current="page"]{
+  color:var(--sh-accent);background:var(--sh-accent-dim);border-color:var(--sh-accent-border);
+}
+.sh-nav-icon{flex-shrink:0}
+.sh-chevron{flex-shrink:0;transition:transform var(--transition)}
+.sh-nav-tools-btn[aria-expanded="true"] .sh-chevron{transform:rotate(180deg)}
+.sh-dropdown{position:relative}
+.sh-menu{
+  display:none;
+  position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  min-width:230px;background:var(--bg3);border:1px solid var(--br-lit);
+  border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.65);
+  padding:6px;z-index:3100;
+}
+.sh-menu[aria-hidden="false"]{display:block}
+.sh-menu-section{
+  font-family:var(--f-mono);font-size:0.58rem;font-weight:700;
+  letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--tx-ter);padding:6px 10px 4px;
+}
+.sh-menu-divider{height:1px;background:var(--br-dim);margin:4px 0}
+.sh-menu-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;
+  font-size:0.82rem;font-weight:600;color:var(--tx-pri);text-decoration:none;
+  transition:background var(--transition),color var(--transition);
+}
+.sh-menu-item:hover,
+.sh-menu-item:focus-visible{background:rgba(255,255,255,0.05);text-decoration:none}
+.sh-menu-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:4px;
+  font-size:0.7rem;font-weight:700;font-family:var(--f-mono);
+  background:var(--bg4);color:var(--tx-sec);flex-shrink:0;border:1px solid var(--br-dim);
+}
+.sh-live{
+  display:flex;align-items:center;gap:0.4rem;flex-shrink:0;
+  font-family:var(--f-mono);font-size:0.58rem;font-weight:700;
+  letter-spacing:0.14em;text-transform:uppercase;color:var(--sh-accent);
+  border:1px solid var(--sh-accent-border);background:var(--sh-accent-dim);
+  padding:0.22rem 0.6rem;border-radius:var(--r-pill);
+}
+.sh-live-dot{
+  width:5px;height:5px;border-radius:50%;background:var(--sh-accent);
+  animation:blink 1.4s ease-in-out infinite;flex-shrink:0;
+}
+@media(max-width:480px){
+  .sh-nav{padding:0 4px}
+  .sh-wordmark{font-size:0.95rem}
+  .sh-nav-item{font-size:0.62rem;padding:0.26rem 0.5rem}
+  .sh-menu{
+    position:fixed;left:12px;right:12px;
+    top:calc(var(--sh-h) + 4px);transform:none;
+    max-height:calc(100dvh - var(--sh-h) - 20px);
+    overflow-y:auto;-webkit-overflow-scrolling:touch;border-radius:12px;
+  }
+}
+
+/* =========================================
+   PAGE SHELL
+   ========================================= */
+.shell{
+  position:relative;z-index:1;
+  min-height:calc(100dvh - var(--sh-h));
+  display:flex;flex-direction:column;align-items:center;
+  padding:0 1rem 5rem;max-width:680px;margin:0 auto;
+}
+
+/* =========================================
+   HERO
+   ========================================= */
+.hero{width:100%;text-align:center;padding:2.8rem 0 1.8rem}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:0.55rem;
+  font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--tx-sec);margin-bottom:1.1rem;
+  border:1px solid var(--br-dim);background:var(--bg2);
+  padding:0.3rem 0.85rem;border-radius:var(--r-pill);
+}
+.hero-eyebrow-dot{
+  display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--acc);animation:blink 1.4s ease-in-out infinite;
+}
+.hero-eyebrow-brand{color:var(--acc);font-weight:700}
+.hero-title{
+  font-family:var(--f-display);font-size:clamp(3rem,13vw,5.5rem);
+  line-height:0.92;letter-spacing:0.02em;color:var(--tx-pri);margin-bottom:0.6rem;
+}
+.hero-title .flame{
+  color:var(--fire);text-shadow:var(--fire-glow);
+  display:inline-block;animation:flicker 3s ease-in-out infinite;
+}
+.hero-sub{font-size:0.8rem;color:var(--tx-sec);line-height:1.7;max-width:360px;margin:0 auto}
+
+/* =========================================
+   ENGINE STRIP
+   ========================================= */
+.engine-strip{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:0.65rem;
+  margin:1.1rem 0 1.4rem;padding:0.6rem 1rem;
+  background:var(--bg2);border:1px solid var(--br-dim);border-radius:var(--r);
+  font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--tx-ter);
+}
+.engine-strip-icon{
+  width:18px;height:18px;border-radius:4px;
+  background:linear-gradient(135deg,var(--acc) 0%,#00c974 100%);
+  display:grid;place-items:center;flex-shrink:0;box-shadow:0 0 8px rgba(0,255,153,0.25);
+}
+.engine-strip-icon svg{display:block}
+.engine-strip strong{color:var(--acc);font-weight:700;letter-spacing:0.16em}
+.engine-strip .sep{color:var(--br-lit)}
+
+/* =========================================
+   SEARCH
+   ========================================= */
 .search-wrap{width:100%;margin-bottom:0.6rem}
-.search-box{display:flex;gap:0.5rem;background:var(--bg2);border:1px solid var(--br-lit);border-radius:var(--r);padding:0.65rem;transition:border-color var(--transition),box-shadow var(--transition)}
+.search-box{
+  display:flex;gap:0.5rem;background:var(--bg2);
+  border:1px solid var(--br-lit);border-radius:var(--r);padding:0.65rem;
+  transition:border-color var(--transition),box-shadow var(--transition);
+}
 .search-box:focus-within{border-color:var(--acc-border);box-shadow:var(--acc-glow)}
 .search-inner{position:relative;flex:1}
-.search-icon{position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--tx-ter);pointer-events:none;transition:color var(--transition)}
+.search-icon{
+  position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);
+  color:var(--tx-ter);pointer-events:none;transition:color var(--transition);
+}
 .search-box:focus-within .search-icon{color:var(--acc)}
-#q{width:100%;background:var(--bg3);border:1px solid var(--br-dim);border-radius:var(--r-sm);color:var(--tx-pri);font-family:var(--f-mono);font-size:0.85rem;padding:0.8rem 0.9rem 0.8rem 2.4rem;outline:none;-webkit-appearance:none;transition:border-color var(--transition);caret-color:var(--acc);min-height:48px}
+#q{
+  width:100%;background:var(--bg3);border:1px solid var(--br-dim);
+  border-radius:var(--r-sm);color:var(--tx-pri);font-family:var(--f-mono);
+  font-size:0.85rem;padding:0.8rem 0.9rem 0.8rem 2.4rem;
+  outline:none;-webkit-appearance:none;
+  transition:border-color var(--transition);caret-color:var(--acc);min-height:48px;
+}
 #q::placeholder{color:var(--tx-ter)}
 #q:focus{border-color:var(--acc-border)}
-.btn-roast{background:var(--acc);color:var(--bg0);border:none;border-radius:var(--r-sm);font-family:var(--f-display);font-size:1rem;letter-spacing:0.06em;padding:0 1.25rem;cursor:pointer;white-space:nowrap;min-height:48px;transition:opacity var(--transition),transform var(--transition),box-shadow var(--transition);touch-action:manipulation}
+.btn-roast{
+  background:var(--acc);color:var(--bg0);border:none;border-radius:var(--r-sm);
+  font-family:var(--f-display);font-size:1rem;letter-spacing:0.06em;
+  padding:0 1.25rem;cursor:pointer;white-space:nowrap;min-height:48px;
+  transition:opacity var(--transition),transform var(--transition),box-shadow var(--transition);
+  touch-action:manipulation;
+}
 .btn-roast:hover{box-shadow:var(--acc-glow)}
 .btn-roast:active{transform:scale(0.95);opacity:0.85}
 .btn-roast:disabled{opacity:0.35;cursor:not-allowed;transform:none;box-shadow:none}
-/* DROPDOWN */
+
+/* =========================================
+   DROPDOWN
+   ========================================= */
 .dd-shell{position:relative;width:100%}
-#dd{position:absolute;top:0;left:0;right:0;background:var(--bg3);border:1px solid var(--br-lit);border-radius:var(--r);z-index:200;display:none;max-height:280px;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.7)}
+#dd{
+  position:absolute;top:0;left:0;right:0;
+  background:var(--bg3);border:1px solid var(--br-lit);
+  border-radius:var(--r);z-index:200;display:none;
+  max-height:320px;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.7);
+}
 #dd.open{display:block}
-.dd-head{font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--tx-sec);padding:0.7rem 1rem 0.45rem;border-bottom:1px solid var(--br-dim)}
-.dd-row{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;cursor:pointer;border-bottom:1px solid var(--br-dim);transition:background var(--transition)}
+.dd-head{
+  font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--tx-sec);padding:0.7rem 1rem 0.45rem;border-bottom:1px solid var(--br-dim);
+}
+/* Wallet portfolio context header */
+.dd-wallet-ctx{
+  display:flex;align-items:center;gap:0.5rem;
+  padding:0.55rem 1rem;background:var(--acc-dim);
+  border-bottom:1px solid var(--acc-border);
+  font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--acc);
+}
+.dd-wallet-ctx svg{flex-shrink:0}
+.dd-row{
+  display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;
+  cursor:pointer;border-bottom:1px solid var(--br-dim);
+  transition:background var(--transition);
+}
 .dd-row:last-child{border-bottom:none}
 .dd-row:hover{background:var(--bg4)}
 .dd-row:active{background:var(--acc-dim)}
-.dd-avatar{width:34px;height:34px;border-radius:50%;background:var(--bg4);border:1px solid var(--br-mid);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:var(--tx-sec)}
+.dd-avatar{
+  width:34px;height:34px;border-radius:50%;background:var(--bg4);
+  border:1px solid var(--br-mid);flex-shrink:0;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.65rem;font-weight:700;color:var(--tx-sec);
+}
 .dd-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .dd-info{flex:1;min-width:0}
 .dd-name{font-size:0.82rem;font-weight:700;color:var(--tx-pri);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dd-addr{font-size:0.65rem;color:var(--tx-sec);margin-top:1px}
-.badge-strict{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:var(--acc);background:var(--acc-dim);border:1px solid var(--acc-border);padding:0.18rem 0.5rem;border-radius:var(--r-pill);white-space:nowrap;flex-shrink:0}
-.badge-community{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:var(--amber);background:var(--amber-dim);border:1px solid var(--amber-border);padding:0.18rem 0.5rem;border-radius:var(--r-pill);white-space:nowrap;flex-shrink:0}
+.dd-bal{font-size:0.65rem;color:var(--acc);margin-top:1px;font-style:italic}
+.badge-strict{
+  font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;
+  color:var(--acc);background:var(--acc-dim);border:1px solid var(--acc-border);
+  padding:0.18rem 0.5rem;border-radius:var(--r-pill);white-space:nowrap;flex-shrink:0;
+}
+.badge-community{
+  font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;
+  color:var(--amber);background:var(--amber-dim);border:1px solid var(--amber-border);
+  padding:0.18rem 0.5rem;border-radius:var(--r-pill);white-space:nowrap;flex-shrink:0;
+}
+.badge-wallet{
+  font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;
+  color:var(--tx-sec);background:var(--bg4);border:1px solid var(--br-mid);
+  padding:0.18rem 0.5rem;border-radius:var(--r-pill);white-space:nowrap;flex-shrink:0;
+}
 .dd-loading{padding:0.9rem 1rem;font-size:0.7rem;color:var(--tx-sec);display:flex;align-items:center;gap:0.5rem}
 .dd-spin{display:inline-block;animation:tspin 0.7s linear infinite}
 @keyframes tspin{to{transform:rotate(360deg)}}
-/* LOADER */
+
+/* =========================================
+   LOADER
+   ========================================= */
 #loader{display:none;width:100%;padding:2rem 0;text-align:center}
 #loader.on{display:block}
-.term{display:inline-block;background:var(--bg2);border:1px solid var(--br-lit);border-radius:var(--r);padding:1.25rem 1.5rem;text-align:left;min-width:270px}
+.term{
+  display:inline-block;background:var(--bg2);border:1px solid var(--br-lit);
+  border-radius:var(--r);padding:1.25rem 1.5rem;text-align:left;min-width:270px;
+}
 .tline{font-size:0.75rem;color:var(--tx-sec);margin-bottom:0.35rem;opacity:0;transition:opacity 0.35s ease;white-space:nowrap}
 .tline:last-child{margin-bottom:0}
 .tline.show{opacity:1}
 .tline .p{color:var(--acc)}
 .tline .spin{display:inline-block;animation:tspin 0.7s linear infinite}
-/* ERROR */
-#err{display:none;width:100%;background:var(--bg2);border:1px solid var(--fire-border);border-radius:var(--r);padding:0.9rem 1.1rem;font-size:0.78rem;color:var(--fire);animation:pop 0.25s ease}
+
+/* =========================================
+   ERROR
+   ========================================= */
+#err{
+  display:none;width:100%;background:var(--bg2);
+  border:1px solid var(--fire-border);border-radius:var(--r);
+  padding:0.9rem 1.1rem;font-size:0.78rem;color:var(--fire);animation:pop 0.25s ease;
+}
 #err.on{display:block}
-/* CARD */
-#card{display:none;width:100%;border-radius:var(--r);overflow:hidden;border:1px solid var(--br-lit);animation:pop 0.38s cubic-bezier(0.34,1.56,0.64,1)}
+
+/* =========================================
+   RESULT CARD
+   ========================================= */
+#card{
+  display:none;width:100%;border-radius:var(--r);overflow:hidden;
+  border:1px solid var(--br-lit);animation:pop 0.38s cubic-bezier(0.34,1.56,0.64,1);
+}
 #card.on{display:block}
 @keyframes pop{from{opacity:0;transform:translateY(18px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 #card.c-roast{border-color:var(--fire-border);box-shadow:var(--fire-glow)}
 #card.c-praise{border-color:var(--acc-border);box-shadow:var(--acc-glow)}
+
 .c-head{background:var(--bg2);display:flex;align-items:center;gap:0.9rem;padding:1rem 1.1rem;border-bottom:1px solid var(--br-dim)}
-.c-avatar{width:46px;height:46px;border-radius:50%;background:var(--bg4);border:2px solid var(--br-mid);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--tx-sec)}
+.c-avatar{
+  width:46px;height:46px;border-radius:50%;background:var(--bg4);
+  border:2px solid var(--br-mid);flex-shrink:0;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;font-weight:700;color:var(--tx-sec);
+}
 .c-avatar img{width:100%;height:100%;object-fit:cover}
 .c-title-wrap{flex:1;min-width:0}
 .c-name{font-family:var(--f-display);font-size:1.2rem;letter-spacing:0.04em;color:var(--tx-pri);line-height:1}
 .c-ticker{font-size:0.7rem;color:var(--tx-sec);margin-top:3px}
-.c-mint{font-size:0.62rem;color:var(--tx-ter);margin-top:2px;font-style:italic}
+.c-mint-row{display:flex;align-items:center;gap:0.4rem;margin-top:3px}
+.c-mint{font-size:0.62rem;color:var(--tx-ter);font-style:italic}
+.c-copy{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:transparent;border:none;cursor:pointer;padding:0;
+  color:var(--tx-ter);transition:color var(--transition);flex-shrink:0;line-height:1;
+}
+.c-copy:hover{color:var(--acc)}
+.c-copy svg{display:block;width:11px;height:11px}
+.c-copy.copied{color:var(--acc)}
 .c-price-wrap{text-align:right;flex-shrink:0}
 .c-price{font-size:1.05rem;font-weight:700;color:var(--tx-pri)}
 .c-change{font-size:0.72rem;margin-top:3px}
 .c-change.up{color:var(--acc)}
 .c-change.dn{color:var(--fire)}
+
 .c-stats{background:var(--bg2);display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--br-dim)}
 .stat{padding:0.75rem 0.9rem;border-right:1px solid var(--br-dim)}
 .stat:last-child{border-right:none}
@@ -117,33 +370,78 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .stat-val.acc{color:var(--acc)}
 .stat-val.fire{color:var(--fire)}
 .stat-val.amber{color:var(--amber)}
+
 .score-wrap{background:var(--bg2);padding:0.85rem 1.1rem;border-bottom:1px solid var(--br-dim)}
 .score-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.55rem}
 .score-lbl{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--tx-sec)}
 .score-num{font-size:1rem;font-weight:700}
 .track{height:4px;background:var(--bg4);border-radius:var(--r-pill);overflow:hidden}
 .fill{height:100%;border-radius:var(--r-pill);width:0%;transition:width 1.1s cubic-bezier(0.34,1.1,0.64,1)}
+.score-engine{display:flex;align-items:center;gap:0.35rem;font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--tx-ter);margin-top:0.55rem}
+.score-engine strong{color:var(--acc);opacity:0.7}
+
 .verdict-wrap{background:var(--bg2);padding:1.25rem 1.1rem 1rem;border-bottom:1px solid var(--br-dim)}
-.verdict-tag{display:inline-flex;align-items:center;gap:0.35rem;font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;padding:0.25rem 0.7rem;border-radius:var(--r-pill);margin-bottom:0.85rem}
+.verdict-tag{
+  display:inline-flex;align-items:center;gap:0.35rem;
+  font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;
+  padding:0.25rem 0.7rem;border-radius:var(--r-pill);margin-bottom:0.85rem;
+}
 .verdict-tag.roast{background:var(--fire-dim);border:1px solid var(--fire-border);color:var(--fire)}
 .verdict-tag.praise{background:var(--acc-dim);border:1px solid var(--acc-border);color:var(--acc)}
 .verdict-msg{font-family:var(--f-display);font-size:clamp(1.05rem,4.5vw,1.4rem);letter-spacing:0.02em;line-height:1.35;color:var(--tx-pri)}
+
 .flags{display:flex;flex-wrap:wrap;gap:0.45rem;padding:0.85rem 1.1rem;background:var(--bg2);border-bottom:1px solid var(--br-dim);min-height:1px}
 .pill{font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.26rem 0.7rem;border-radius:var(--r-pill);border:1px solid}
 .pill-sus{background:var(--fire-dim);border-color:var(--fire-border);color:var(--fire)}
 .pill-ok{background:var(--acc-dim);border-color:var(--acc-border);color:var(--acc)}
 .pill-warn{background:var(--amber-dim);border-color:var(--amber-border);color:var(--amber)}
 .pill-info{background:rgba(100,100,200,0.08);border-color:rgba(100,100,200,0.22);color:#8888cc}
+
 .c-actions{display:flex;gap:0.5rem;padding:0.9rem 1.1rem 1.1rem;background:var(--bg2)}
-.btn-share{flex:1;display:flex;align-items:center;justify-content:center;gap:0.45rem;background:var(--tx-pri);color:var(--bg0);border:none;border-radius:var(--r-sm);font-family:var(--f-display);font-size:1rem;letter-spacing:0.05em;padding:0.85rem;cursor:pointer;transition:opacity var(--transition),transform var(--transition);touch-action:manipulation;min-height:48px}
+.btn-share{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:0.45rem;
+  background:var(--tx-pri);color:var(--bg0);border:none;border-radius:var(--r-sm);
+  font-family:var(--f-display);font-size:1rem;letter-spacing:0.05em;
+  padding:0.85rem;cursor:pointer;
+  transition:opacity var(--transition),transform var(--transition);
+  touch-action:manipulation;min-height:48px;
+}
 .btn-share:active{transform:scale(0.95);opacity:0.85}
-.btn-reset{display:flex;align-items:center;justify-content:center;gap:0.4rem;background:transparent;color:var(--tx-sec);border:1px solid var(--br-lit);border-radius:var(--r-sm);font-family:var(--f-mono);font-size:0.75rem;padding:0.85rem 1rem;cursor:pointer;transition:color var(--transition),border-color var(--transition);touch-action:manipulation;white-space:nowrap;min-height:48px}
+.btn-reset{
+  display:flex;align-items:center;justify-content:center;gap:0.4rem;
+  background:transparent;color:var(--tx-sec);border:1px solid var(--br-lit);
+  border-radius:var(--r-sm);font-family:var(--f-mono);font-size:0.75rem;
+  padding:0.85rem 1rem;cursor:pointer;
+  transition:color var(--transition),border-color var(--transition);
+  touch-action:manipulation;white-space:nowrap;min-height:48px;
+}
 .btn-reset:hover{color:var(--tx-pri);border-color:var(--br-lit)}
 .btn-reset:active{transform:scale(0.95)}
-/* FOOTER */
+
+/* =========================================
+   KEYFRAMES
+   ========================================= */
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+@keyframes flicker{
+  0%,100%{opacity:1;text-shadow:var(--fire-glow)}
+  92%{opacity:1;text-shadow:var(--fire-glow)}
+  93%{opacity:0.7;text-shadow:none}
+  94%{opacity:1;text-shadow:var(--fire-glow)}
+  97%{opacity:0.85}
+}
+
+/* =========================================
+   FOOTER
+   ========================================= */
 .foot{width:100%;margin-top:auto;padding-top:2.5rem;border-top:1px solid var(--br-dim);text-align:center;font-size:0.65rem;color:var(--tx-ter);line-height:1.8}
 .foot a{color:var(--tx-sec);text-decoration:none}
 .foot a:hover{color:var(--acc)}
+.foot-brand{display:inline-flex;align-items:center;gap:0.4rem;margin-bottom:0.3rem}
+.foot-brand-mark{width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,var(--acc) 0%,#00c974 100%);display:grid;place-items:center}
+.foot-brand-mark svg{display:block}
+.foot-brand-name{font-family:var(--f-display);font-size:0.85rem;letter-spacing:0.08em;color:var(--tx-sec);line-height:1}
+.foot-brand-name span{color:var(--acc)}
+
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--br-lit);border-radius:2px}
@@ -151,65 +449,140 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </style>
 </head>
 <body>
-<div class="shell">
+<noscript>
+  <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5GNQ73DS"
+          height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
 
-  <nav class="nav">
-    <a class="nav-brand" href="/">
-      <div class="brand-gem">
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="sh-brand" href="/">
+      <div class="sh-logomark" aria-hidden="true">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M7 1L13 10H1L7 1Z" fill="#080810"/>
           <path d="M7 6L10 10H4L7 6Z" fill="#080810" opacity="0.5"/>
         </svg>
       </div>
-      <span class="brand-name">Degen Roast Machine</span>
+      <span class="sh-wordmark">COMPOUNDINGLY <span class="sh-wordmark-accent">TOOLS</span></span>
     </a>
-    <span class="nav-pill">&#x26A1; LIVE</span>
-  </nav>
+    <nav class="sh-nav" aria-label="Primary">
+      <div class="sh-nav-links">
+        <a class="sh-nav-item sh-nav-roast" href="/" aria-current="page" aria-label="Degen Roast Machine -- Home">
+          <svg class="sh-nav-icon" width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M7 1L13 10H1L7 1Z" fill="currentColor"/>
+            <path d="M7 6L10 10H4L7 6Z" fill="currentColor" opacity="0.5"/>
+          </svg>
+          Roast Machine
+        </a>
+        <div class="sh-dropdown">
+          <button id="shToolsBtn" class="sh-nav-item sh-nav-tools-btn"
+            aria-haspopup="true" aria-expanded="false" aria-controls="shToolsMenu" type="button">
+            Tools
+            <svg class="sh-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <div id="shToolsMenu" class="sh-menu" role="menu" aria-hidden="true" aria-labelledby="shToolsBtn">
+            <div class="sh-menu-section" role="presentation">Finance</div>
+            <a role="menuitem" href="/tools/compound-calculator/" class="sh-menu-item"><span class="sh-menu-icon" aria-hidden="true">%</span>Compound Calculator</a>
+            <a role="menuitem" href="/tools/position-sizing/" class="sh-menu-item"><span class="sh-menu-icon" aria-hidden="true">#</span>Position Sizing</a>
+            <a role="menuitem" href="/tools/fee-calculator/" class="sh-menu-item"><span class="sh-menu-icon" aria-hidden="true">$</span>Fee Savings Calculator</a>
+            <a role="menuitem" href="/tools/currency-converter/" class="sh-menu-item"><span class="sh-menu-icon" aria-hidden="true">~</span>Currency Converter</a>
+            <a role="menuitem" href="/tools/mortgage-calculator/" class="sh-menu-item"><span class="sh-menu-icon" aria-hidden="true">@</span>Mortgage Calculator</a>
+            <a role="menuitem" href="/tools/trading-journal/" class="sh-menu-item"><span class="sh-menu-icon" aria-hidden="true">+</span>Trading Journal</a>
+            <div class="sh-menu-divider" role="presentation"></div>
+            <div class="sh-menu-section" role="presentation">Productivity</div>
+            <a role="menuitem" href="/tools/pomodoro-timer/" class="sh-menu-item"><span class="sh-menu-icon" aria-hidden="true">O</span>Pomodoro Timer</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <span class="sh-live" aria-label="Live data"><span class="sh-live-dot"></span>LIVE</span>
+  </div>
+</header>
 
-  <section class="hero">
-    <p class="hero-kicker">
-      <span class="blink"></span>
-      Powered by Jupiter APIs &mdash; No mercy, no advice
+<script>
+(function(){
+  var btn=document.getElementById('shToolsBtn'),menu=document.getElementById('shToolsMenu');
+  if(!btn||!menu)return;
+  function open(){btn.setAttribute('aria-expanded','true');menu.setAttribute('aria-hidden','false');}
+  function close(){btn.setAttribute('aria-expanded','false');menu.setAttribute('aria-hidden','true');}
+  function toggle(){btn.getAttribute('aria-expanded')==='true'?close():open();}
+  btn.addEventListener('click',toggle);
+  btn.addEventListener('keydown',function(e){if(e.key==='Escape'){close();btn.focus();}if(e.key==='ArrowDown'){e.preventDefault();open();}});
+  menu.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();close();btn.focus();}});
+  document.addEventListener('click',function(e){if(!menu.contains(e.target)&&!btn.contains(e.target))close();});
+})();
+</script>
+
+<div class="shell">
+
+  <section class="hero" aria-label="Degen Roast Machine">
+    <p class="hero-eyebrow">
+      <span class="hero-eyebrow-dot"></span>
+      Powered by the&nbsp;<span class="hero-eyebrow-brand">Compoundingly Engine</span>&nbsp;-- Jupiter data
     </p>
-    <h1 class="hero-title">
-      HOW <span class="flame">COOKED</span><br>IS YOUR BAG?
-    </h1>
-    <p class="hero-sub">Enter any Solana token ticker or mint address. Real on-chain data. Zero chill.</p>
+    <h1 class="hero-title">HOW <span class="flame">COOKED</span><br>IS YOUR BAG?</h1>
+    <p class="hero-sub">Token ticker, mint address, wallet address, or .sol domain. Real on-chain data. Zero chill.</p>
   </section>
+
+  <div class="engine-strip" role="note" aria-label="Data source">
+    <div class="engine-strip-icon">
+      <svg width="9" height="9" viewBox="0 0 14 14" fill="none">
+        <path d="M7 1L13 10H1L7 1Z" fill="#080810"/>
+        <path d="M7 6L10 10H4L7 6Z" fill="#080810" opacity="0.5"/>
+      </svg>
+    </div>
+    <strong>Compoundingly Engine</strong>
+    <span class="sep">//</span>
+    Tokens + Wallets + .sol domains
+    <span class="sep">//</span>
+    Read-only -- no wallet required
+  </div>
 
   <div class="search-wrap">
     <div class="search-box">
       <div class="search-inner">
         <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
         <input id="q" type="text"
-          placeholder="BONK, WIF, PEPE, or paste mint address..."
+          placeholder="BONK, WIF, okan.sol, or wallet address..."
           autocomplete="off" autocorrect="off" autocapitalize="off"
-          spellcheck="false" enterkeyhint="go"/>
+          spellcheck="false" enterkeyhint="go"
+          aria-label="Token ticker, mint address, wallet address, or .sol domain"/>
       </div>
-      <button class="btn-roast" id="btn" onclick="go()">ROAST IT</button>
+      <button class="btn-roast" id="btn" onclick="go()" aria-label="Roast this token">ROAST IT</button>
     </div>
   </div>
 
-  <div class="dd-shell">
+  <div class="dd-shell" role="listbox" aria-label="Token search results">
     <div id="dd"></div>
   </div>
 
-  <div id="loader">
+  <div id="loader" role="status" aria-live="polite" aria-label="Loading">
     <div class="term" id="term"></div>
   </div>
 
-  <div id="err"></div>
+  <div id="err" role="alert" aria-live="assertive"></div>
 
-  <div id="card">
+  <div id="card" aria-live="polite">
     <div class="c-head">
       <div class="c-avatar" id="c-av"></div>
       <div class="c-title-wrap">
         <div class="c-name" id="c-name"></div>
         <div class="c-ticker" id="c-ticker"></div>
-        <div class="c-mint" id="c-mint"></div>
+        <div class="c-mint-row">
+          <span class="c-mint" id="c-mint"></span>
+          <button class="c-copy" id="c-copy" aria-label="Copy contract address" title="Copy CA">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="c-price-wrap">
         <div class="c-price" id="c-price"></div>
@@ -217,16 +590,22 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </div>
     </div>
     <div class="c-stats">
-      <div class="stat"><div class="stat-lbl">24h Volume</div><div class="stat-val" id="s-vol">—</div></div>
-      <div class="stat"><div class="stat-lbl">Holders</div><div class="stat-val" id="s-hold">—</div></div>
-      <div class="stat"><div class="stat-lbl">Liquidity</div><div class="stat-val" id="s-liq">—</div></div>
+      <div class="stat"><div class="stat-lbl">24h Volume</div><div class="stat-val" id="s-vol">--</div></div>
+      <div class="stat"><div class="stat-lbl">Holders</div><div class="stat-val" id="s-hold">--</div></div>
+      <div class="stat"><div class="stat-lbl">Liquidity</div><div class="stat-val" id="s-liq">--</div></div>
     </div>
     <div class="score-wrap">
       <div class="score-row">
         <span class="score-lbl">Organic Score</span>
-        <span class="score-num" id="s-num">—</span>
+        <span class="score-num" id="s-num">--</span>
       </div>
       <div class="track"><div class="fill" id="s-fill"></div></div>
+      <div class="score-engine">
+        <svg width="8" height="8" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M7 1L13 10H1L7 1Z" fill="var(--acc)" opacity="0.5"/>
+        </svg>
+        Scored by <strong>Compoundingly Engine</strong>&nbsp;// Jupiter organic data
+      </div>
     </div>
     <div class="verdict-wrap">
       <div class="verdict-tag" id="v-tag"></div>
@@ -234,15 +613,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div class="flags" id="flags"></div>
     <div class="c-actions">
-      <button class="btn-share" id="btn-share">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+      <button class="btn-share" id="btn-share" aria-label="Share verdict on X">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.69l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
         </svg>
         SHARE ON X
       </button>
-      <button class="btn-reset" onclick="reset()">
+      <button class="btn-reset" onclick="reset()" aria-label="Reset and search again">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
           <path d="M3 3v5h5"/>
         </svg>
@@ -252,46 +631,57 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
 
   <footer class="foot">
-    <p>Data from <a href="https://jup.ag" target="_blank" rel="noopener">Jupiter APIs</a> &bull;
-      Not financial advice &bull; <a href="/">Compoundingly</a></p>
-    <p>Organic Score, isSus flags &amp; price data are read-only — no wallet ever needed.</p>
+    <div class="foot-brand">
+      <div class="foot-brand-mark">
+        <svg width="8" height="8" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M7 1L13 10H1L7 1Z" fill="#080810"/>
+        </svg>
+      </div>
+      <span class="foot-brand-name">COMPOUNDINGLY <span>TOOLS</span></span>
+    </div>
+    <p>
+      On-chain data via <a href="https://jup.ag" target="_blank" rel="noopener">Jupiter APIs</a>
+      &bull; Scored by the Compoundingly Engine
+      &bull; Not financial advice
+    </p>
+    <p>Organic Score, risk flags and price data are read-only -- no wallet ever needed.</p>
   </footer>
 
 </div>
 
 <script>
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 //  ROAST / PRAISE BANKS
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 const ROASTS = [
   "Organic score so low it's basically a controlled study in disappointment. The 'community' is 4 bots and a broken Discord invite link.",
   "isSus flag raised. Somewhere a dev is watching this chart from a burner account, hoping you forget his wallet address.",
-  "This token has more bot volume than a CoinGecko article comments section. You're not holding a bag — you're holding a receipt.",
+  "This token has more bot volume than a CoinGecko article comments section. You're not holding a bag -- you're holding a receipt.",
   "Liquidity thinner than the whitepaper they never wrote. One market sell and you become the entire price impact.",
-  "The Organic Score isn't a score. It's a cry for help. Jupiter tried to warn you. We're warning you louder.",
-  "24h volume lower than your last tweet's impressions. The chart isn't consolidating — it's flatlined and on life support.",
+  "The Organic Score isn't a score. It's a cry for help. Jupiter tried to warn you. The Compoundingly Engine is warning you louder.",
+  "24h volume lower than your last tweet's impressions. The chart isn't consolidating -- it's flatlined and on life support.",
   "Holders fewer than the people who've read the roadmap. Which was a screenshot of a Figma. From someone's phone.",
   "Mint authority still active. The dev can print infinite tokens. Sweet dreams about your 'fixed supply' narrative.",
   "This bag has been 'about to moon' for so long it's legally classified as sedimentary rock.",
   "Top holders own 60%+ of supply. That's not a community, that's a hostage situation where you volunteered to be the hostage.",
-  "Price down this much in 24h means the whales aren't dumping — they finished dumping. You're in the archaeological layer now.",
-  "No real organic buyers, no liquidity, no verified status. This isn't a degen play — it's a donation with extra steps.",
+  "Price down this much in 24h means the whales aren't dumping -- they finished dumping. You're in the archaeological layer now.",
+  "No real organic buyers, no liquidity, no verified status. This isn't a degen play -- it's a donation with extra steps.",
   "The dev wallet said SOLD. The LP said 0% locked. Your hopium said 'diamond hands.' One of these is lying. It's the hopium.",
-  "Volume this thin is a feature, not a bug — it means when you try to exit, the price drops 40% before your order fills.",
+  "Volume this thin is a feature, not a bug -- it means when you try to exit, the price drops 40% before your order fills.",
   "Freeze authority active. The team can lock every wallet at will. Sleep tight, ser. Your tokens aren't really yours.",
   "An Organic Score of single digits means the only organic thing here is the cope you grew in your own echo chamber.",
 ];
 const PRAISES = [
   "Organic score in the green. Real humans actually trading this. On Solana. In this market. You found the needle.",
   "Verified, liquid, organically healthy. You either did the research or got astronomically lucky. Either way, based.",
-  "High organic score means bots aren't running this one — actual degens are. A rare and beautiful thing.",
+  "High organic score means bots aren't running this one -- actual degens are. A rare and beautiful thing.",
   "Liquidity deep enough to swim in, holders growing, no sus flags. This is what due diligence looks like. Frame it.",
   "Mint authority disabled, freeze authority dead, top holders distributed. Whoever launched this actually read a book.",
   "Strong 24h volume, real buyer organic, price holding. Screenshot this. You will want proof you weren't always wrong.",
-  "The Jupiter oracle has spoken: this one has a pulse. Not financial advice. But also… maybe keep it.",
+  "The Compoundingly Engine has spoken: this one has a pulse. Not financial advice. But also... maybe keep it.",
   "High Organic Score means the market hasn't fully priced in that you made a correct decision. Rare Tuesday.",
   "Verified on Jupiter's strict list. Organic buyers stacking. Dev wallet didn't dump. You are statistically an outlier.",
-  "Real volume, no isSus flag, genuine community activity. This bag isn't cooked — it might actually cook something.",
+  "Real volume, no isSus flag, genuine community activity. This bag isn't cooked -- it might actually cook something.",
   "Organically healthy, well-distributed, actively traded by humans. In 2025. On Solana. You've done something special.",
   "This score says: functioning token, real market, people actually want it. The bar was underground and you cleared it.",
   "Top holders spread out, LP locked, score high. Somewhere a Telegram alpha caller is taking credit for your find. Don't let them.",
@@ -300,61 +690,59 @@ const PRAISES = [
   "Organic score says: genuine activity detected. Which means, unlike 97% of your past trades, this one had actual humans behind it.",
 ];
 
-// ─────────────────────────────────────────
-//  API LAYER
-//
-//  ALL endpoints use lite-api.jup.ag — this is Jupiter's
-//  public, key-free, CORS-enabled base URL (v2).
-//
-//  Ticker search  → GET /tokens/v2/search?query={q}
-//  Mint lookup    → GET /tokens/v2/search?query={mint}  (same endpoint)
-//  Price          → GET /price/v3?ids={mint}
-//
-//  The v2/search endpoint handles both symbol search and
-//  exact mint address resolution in a single call, so we
-//  don't need a separate token list download at all.
-// ─────────────────────────────────────────
-const BASE = 'https://lite-api.jup.ag';
+// ─────────────────────────────────────────────────────────
+//  CONSTANTS & HELPERS
+// ─────────────────────────────────────────────────────────
+const BASE       = 'https://lite-api.jup.ag';
+const SNS_API    = 'https://sns-sdk-proxy.bonfida.workers.dev';
+// Helius free-tier DAS API -- replace demo key with your own for production
+// Get a free key at https://dev.helius.xyz
+const HELIUS_RPC = 'https://mainnet.helius-rpc.com/?api-key=demo';
 
-const isMint = s => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s.trim());
-const rnd    = a => a[Math.floor(Math.random() * a.length)];
-const wait   = ms => new Promise(r => setTimeout(r, ms));
-const esc    = s => { const d = document.createElement('div'); d.appendChild(document.createTextNode(s||'')); return d.innerHTML; };
+// SOL mint address (native SOL wrapped)
+const WSOL_MINT  = 'So11111111111111111111111111111111111111112';
+
+const isMint   = s => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s.trim());
+const isDomain = s => /^[a-zA-Z0-9-_]+\.(sol|skr|abc|bonk|poor)$/i.test(s.trim());
+const isWallet = s => isMint(s); // Solana wallet addresses are also base58 32-44 chars
+const rnd      = a => a[Math.floor(Math.random() * a.length)];
+const wait     = ms => new Promise(r => setTimeout(r, ms));
+const esc      = s => { const d = document.createElement('div'); d.appendChild(document.createTextNode(s||'')); return d.innerHTML; };
 
 function fUSD(n) {
-  if (n == null || isNaN(n)) return '—';
+  if (n == null || isNaN(n)) return '--';
   if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
   if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
   if (n >= 1e3) return '$' + (n/1e3).toFixed(1) + 'K';
   if (n >= 1)   return '$' + n.toFixed(2);
   if (n > 0)    return '$' + n.toPrecision(4);
-  return '—';
+  return '--';
 }
 function fNum(n) {
-  if (n == null || isNaN(n)) return '—';
+  if (n == null || isNaN(n)) return '--';
   if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
   if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
   return n.toLocaleString();
 }
-function short(a) { return a ? a.slice(0,5) + '…' + a.slice(-5) : ''; }
+function short(a) { return a ? a.slice(0,5) + '...' + a.slice(-5) : ''; }
 
-/**
- * Search Jupiter v2 API by ticker or mint address.
- * Returns up to 20 results (Jupiter default).
- * No API key required on lite-api.jup.ag.
- */
+function xLen(s) {
+  let n = 0;
+  for (const c of s) n += (c.codePointAt(0) > 0xFFFF) ? 2 : 1;
+  return n;
+}
+
+// ─────────────────────────────────────────────────────────
+//  JUPITER API
+// ─────────────────────────────────────────────────────────
 async function searchJupiter(query) {
   const url = `${BASE}/tokens/v2/search?query=${encodeURIComponent(query.trim())}`;
   const r = await fetch(url, { headers: { Accept: 'application/json' } });
   if (!r.ok) throw new Error('HTTP ' + r.status);
   const data = await r.json();
-  // v2/search returns an array directly
   return Array.isArray(data) ? data : [];
 }
 
-/**
- * Fetch live price from Jupiter Price v3.
- */
 async function priceOf(mint) {
   try {
     const r = await fetch(`${BASE}/price/v3?ids=${mint}`, { headers: { Accept: 'application/json' } });
@@ -364,15 +752,149 @@ async function priceOf(mint) {
   } catch { return null; }
 }
 
-/**
- * Normalise a v2 search result token into our internal shape.
- * v2 uses `id` instead of `address`, `icon` instead of `logoURI`.
- */
+// ─────────────────────────────────────────────────────────
+//  DOMAIN RESOLUTION (SNS / Bonfida)
+//  Supports .sol -- other TLDs attempted via same proxy
+// ─────────────────────────────────────────────────────────
+async function resolveDomain(domain) {
+  const clean = domain.trim().toLowerCase();
+  const tld   = clean.split('.').pop();
+
+  // .skr is Seeker-native -- resolver not yet public
+  if (tld === 'skr') {
+    throw new Error('.skr domain resolution is not yet publicly available. Paste the wallet address directly instead.');
+  }
+
+  // SNS proxy handles .sol and SNS-registered alt TLDs
+  const url = `${SNS_API}/resolve/${encodeURIComponent(clean)}`;
+  const r   = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!r.ok) {
+    if (r.status === 404) throw new Error(`Domain "${domain}" not found. Check spelling or paste the wallet address directly.`);
+    throw new Error(`Domain resolution failed (HTTP ${r.status}). Try again or paste the wallet address.`);
+  }
+  const data = await r.json();
+  // SNS proxy returns { s: "ok", result: "<pubkey>" }
+  if (!data || !data.result) throw new Error(`Could not resolve "${domain}" to a wallet address.`);
+  return data.result;
+}
+
+// ─────────────────────────────────────────────────────────
+//  WALLET PORTFOLIO (Helius DAS API)
+//  getAssetsByOwner -- returns fungible SPL tokens
+//  We filter to fungible tokens with meaningful balance,
+//  then look them up in Jupiter to get roast data
+// ─────────────────────────────────────────────────────────
+async function fetchWalletTokens(walletAddress) {
+  const body = {
+    jsonrpc: '2.0',
+    id:      'drm-portfolio',
+    method:  'getAssetsByOwner',
+    params:  {
+      ownerAddress: walletAddress,
+      page:         1,
+      limit:        50,           // max per page
+      displayOptions: {
+        showFungible:          true,
+        showNativeBalance:     true,
+        showUnverifiedCollections: false,
+        showCollectionMetadata:    false,
+        showGrandTotal:        false,
+        showInscription:       false,
+        showZeroBalance:       false,
+      }
+    }
+  };
+
+  const r = await fetch(HELIUS_RPC, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  });
+
+  if (!r.ok) throw new Error(`Portfolio fetch failed (HTTP ${r.status}). The Helius demo key may be rate-limited -- try again shortly.`);
+  const data = await r.json();
+
+  if (data.error) throw new Error(`RPC error: ${data.error.message || JSON.stringify(data.error)}`);
+
+  const items = (data.result && data.result.items) || [];
+
+  // Filter to fungible tokens only, exclude NFTs and unknown
+  const fungible = items.filter(item =>
+    item.interface === 'FungibleToken' ||
+    item.interface === 'FungibleAsset'
+  );
+
+  if (!fungible.length) throw new Error('No fungible tokens found in this wallet. They may hold NFTs only, or the wallet is empty.');
+
+  // Sort by USD value descending (token_info.price_info.total_price)
+  fungible.sort((a, b) => {
+    const aVal = a.token_info?.price_info?.total_price ?? 0;
+    const bVal = b.token_info?.price_info?.total_price ?? 0;
+    return bVal - aVal;
+  });
+
+  // Take top 10 by value
+  return fungible.slice(0, 10);
+}
+
+// Convert a Helius DAS fungible asset into our normalise() shape
+// Then enrich with Jupiter metadata where available
+async function heliusToNormalised(asset) {
+  const mint    = asset.id;
+  const info    = asset.token_info     || {};
+  const price   = info.price_info      || {};
+  const meta    = asset.content?.metadata || {};
+  const links   = asset.content?.links   || {};
+
+  // Balance in UI units
+  const decimals = info.decimals ?? 0;
+  const rawBal   = info.balance  ?? 0;
+  const uiBal    = rawBal / Math.pow(10, decimals);
+
+  // Try to enrich with Jupiter search for full roast data
+  let jupData = null;
+  try {
+    const results = await searchJupiter(mint);
+    if (results.length) jupData = results[0];
+  } catch { /* Jupiter enrichment is best-effort */ }
+
+  if (jupData) {
+    // Merge Jupiter data with balance info from Helius
+    const n = normalise(jupData);
+    n._walletBalance    = uiBal;
+    n._walletUsdValue   = price.total_price ?? null;
+    return n;
+  }
+
+  // Fallback: build from Helius data alone
+  return {
+    id:                mint,
+    address:           mint,
+    name:              meta.name   || info.symbol || short(mint),
+    symbol:            info.symbol || meta.symbol || '???',
+    icon:              links.image || null,
+    decimals,
+    holderCount:       null,
+    organicScore:      null,
+    organicScoreLabel: null,
+    isVerified:        false,
+    isStrict:          false,
+    tags:              [],
+    usdPrice:          price.price_per_token ?? null,
+    liquidity:         null,
+    audit:             {},
+    stats24h:          { priceChange: null, buyVolume: null, sellVolume: null },
+    daily_volume:      null,
+    _walletBalance:    uiBal,
+    _walletUsdValue:   price.total_price ?? null,
+  };
+}
+
 function normalise(t) {
-  const tags     = t.tags || [];
-  const isStrict = tags.includes('strict');
+  const tags       = t.tags || [];
+  const isStrict   = tags.includes('strict');
   const isVerified = isStrict || tags.includes('verified') || !!t.isVerified;
-  const audit    = t.audit || {};
+  const audit      = t.audit || {};
   return {
     id:                  t.id || t.address,
     address:             t.id || t.address,
@@ -389,53 +911,84 @@ function normalise(t) {
     usdPrice:            t.usdPrice   ?? null,
     liquidity:           t.liquidity  ?? null,
     audit,
-    // v2 stats live in stats24h sub-object
     stats24h:            t.stats24h   ?? { priceChange: null, buyVolume: null, sellVolume: null },
     daily_volume:        t.daily_volume ?? null,
   };
 }
 
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 //  STATE
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 let ddData     = [];
 let debounce   = null;
 let currentTok = null;
 
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 //  DROPDOWN
-// ─────────────────────────────────────────
-function renderDD(tokens) {
+// ─────────────────────────────────────────────────────────
+function renderDD(tokens, walletCtx) {
   const el = document.getElementById('dd');
   if (!tokens || !tokens.length) { el.classList.remove('open'); return; }
-  ddData = tokens.slice(0, 8);
-  let h = '<div class="dd-head">Select token — Jupiter</div>';
+  ddData = tokens.slice(0, 10);
+
+  let h = '';
+
+  // Wallet portfolio context banner
+  if (walletCtx) {
+    h += `<div class="dd-wallet-ctx">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      </svg>
+      Portfolio -- ${esc(walletCtx)} -- pick a bag to roast
+    </div>`;
+  } else {
+    h += '<div class="dd-head">Select token -- Jupiter</div>';
+  }
+
   ddData.forEach((t, i) => {
-    const sym = (t.symbol || '?').slice(0, 5).toUpperCase();
-    const src = t.icon || '';
-    const bdg = t.isStrict
-      ? `<span class="badge-strict">STRICT</span>`
-      : t.isVerified
-        ? `<span class="badge-strict">VERIFIED</span>`
-        : `<span class="badge-community">COMMUNITY</span>`;
-    h += `<div class="dd-row" onclick="pick(${i})">
+    const sym  = (t.symbol || '?').slice(0, 5).toUpperCase();
+    const src  = t.icon || '';
+    const addr = t.address || '';
+
+    let bdg;
+    if (walletCtx) {
+      // Show USD value for wallet portfolio entries
+      const val = t._walletUsdValue;
+      bdg = val != null
+        ? `<span class="badge-wallet">${fUSD(val)}</span>`
+        : `<span class="badge-wallet">${fNum(t._walletBalance)} ${sym}</span>`;
+    } else {
+      bdg = t.isStrict
+        ? `<span class="badge-strict">STRICT</span>`
+        : t.isVerified
+          ? `<span class="badge-strict">VERIFIED</span>`
+          : `<span class="badge-community">COMMUNITY</span>`;
+    }
+
+    const balLine = walletCtx && t._walletBalance != null
+      ? `<div class="dd-bal">${fNum(t._walletBalance)} ${sym}</div>`
+      : '';
+
+    h += `<div class="dd-row" onclick="pick(${i})" role="option" tabindex="0">
       <div class="dd-avatar">
         ${src ? `<img src="${esc(src)}" alt="${sym}" onerror="this.parentNode.textContent='${sym}'"/>` : sym}
       </div>
       <div class="dd-info">
         <div class="dd-name">${esc(t.name || t.symbol || 'Unknown')}</div>
-        <div class="dd-addr">${short(t.address || '')}</div>
+        <div class="dd-addr">${short(addr)}</div>
+        ${balLine}
       </div>
       ${bdg}
     </div>`;
   });
+
   el.innerHTML = h;
   el.classList.add('open');
 }
 
-function showDDSearching() {
+function showDDSearching(msg) {
   const el = document.getElementById('dd');
-  el.innerHTML = '<div class="dd-loading"><span class="dd-spin">⠋</span> Searching Jupiter…</div>';
+  el.innerHTML = `<div class="dd-loading"><span class="dd-spin">&#x22CB;</span> ${esc(msg || 'Searching Jupiter...')}</div>`;
   el.classList.add('open');
 }
 
@@ -446,19 +999,87 @@ function pick(i) {
   if (ddData[i]) process(ddData[i]);
 }
 
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  INPUT CLASSIFIER
+//  Returns: 'domain' | 'wallet' | 'mint' | 'ticker'
+// ─────────────────────────────────────────────────────────
+function classifyInput(raw) {
+  const s = raw.trim();
+  if (isDomain(s))  return 'domain';
+  if (isMint(s))    return 'wallet'; // wallet + mint same regex; we try wallet portfolio first
+  return 'ticker';
+}
+
+// ─────────────────────────────────────────────────────────
 //  MAIN FLOW
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 async function go() {
   const raw = document.getElementById('q').value.trim();
   if (!raw) return;
   hideDD();
   clearTimeout(debounce);
 
-  // Both ticker AND mint address go through the same search endpoint.
-  // For a mint, Jupiter returns a single exact result.
-  // For a ticker like BONK, it returns ranked matches.
-  await load(['Searching Jupiter token database…', 'Fetching on-chain data…', 'Consulting the degen oracle…', 'Writing your verdict…']);
+  const type = classifyInput(raw);
+
+  // ── DOMAIN FLOW ──────────────────────────────────────
+  if (type === 'domain') {
+    await load([
+      `Resolving ${esc(raw)}...`,
+      'Looking up wallet address...',
+      'Fetching token portfolio...',
+      'Preparing bags for roasting...',
+    ]);
+    let walletAddress;
+    try {
+      walletAddress = await resolveDomain(raw);
+    } catch (e) {
+      hideLoad();
+      showErr(e.message);
+      return;
+    }
+    await loadWalletPortfolio(walletAddress, raw);
+    return;
+  }
+
+  // ── WALLET / MINT FLOW ───────────────────────────────
+  if (type === 'wallet') {
+    // First try: wallet portfolio
+    await load([
+      'Detected wallet address...',
+      'Fetching token portfolio...',
+      'Enriching with Jupiter data...',
+      'Ready to roast...',
+    ]);
+    try {
+      await loadWalletPortfolio(raw, short(raw));
+      return;
+    } catch (e) {
+      // If portfolio fetch fails, fall through to Jupiter mint lookup
+      hideLoad();
+      // If it was a Helius error specifically, try Jupiter mint lookup
+      await load(['Searching Jupiter token database...', 'Fetching on-chain data...', 'Consulting the Compoundingly Engine...', 'Writing your verdict...']);
+      let results = [];
+      try {
+        const raw_results = await searchJupiter(raw);
+        results = raw_results.map(normalise);
+      } catch (e2) {
+        hideLoad();
+        showErr('Jupiter API error. Check your connection and try again.');
+        return;
+      }
+      hideLoad();
+      if (!results.length) {
+        showErr(`No token or wallet data found for "${esc(raw)}". Check the address and try again.`);
+        return;
+      }
+      if (results.length === 1) { await process(results[0]); }
+      else { renderDD(results, null); }
+      return;
+    }
+  }
+
+  // ── TICKER FLOW (default) ────────────────────────────
+  await load(['Searching Jupiter token database...', 'Fetching on-chain data...', 'Consulting the Compoundingly Engine...', 'Writing your verdict...']);
 
   let results = [];
   try {
@@ -473,22 +1094,39 @@ async function go() {
   hideLoad();
 
   if (!results.length) {
-    showErr(`"${esc(raw)}" not found in ticker search. For unverified or brand new degen plays, paste the full base58 mint address (32-44 chars).`);
+    showErr(`"${esc(raw)}" not found. For unverified tokens, paste the full mint address. For wallet portfolios, paste the full base58 wallet address.`);
     return;
   }
 
-  // If exact mint address was pasted, or only one result → go straight to roast
-  if (isMint(raw) || results.length === 1) {
-    await process(results[0]);
-  } else {
-    // Multiple matches → show dropdown for user to pick
-    renderDD(results);
+  if (results.length === 1) { await process(results[0]); }
+  else { renderDD(results, null); }
+}
+
+// Load and display wallet portfolio in the dropdown
+async function loadWalletPortfolio(walletAddress, displayLabel) {
+  let heliusAssets;
+  try {
+    heliusAssets = await fetchWalletTokens(walletAddress);
+  } catch (e) {
+    hideLoad();
+    throw e; // re-throw so caller can handle fallback
   }
+
+  // Enrich top tokens with Jupiter data (parallel, best-effort)
+  const enriched = await Promise.all(heliusAssets.map(a => heliusToNormalised(a)));
+  hideLoad();
+
+  if (!enriched.length) {
+    showErr(`No tokens found in wallet ${displayLabel}. The wallet may be empty or hold only NFTs.`);
+    return;
+  }
+
+  renderDD(enriched, displayLabel);
 }
 
 async function process(tok) {
   hideErr(); hideCard();
-  await load(['Fetching live price data…', 'Analyzing organic health…', 'Running roast engine…', 'Almost ready…']);
+  await load(['Fetching live price data...', 'Analyzing organic health...', 'Running Compoundingly Engine...', 'Almost ready...']);
   const mint = tok.id || tok.address;
   const px   = mint ? await priceOf(mint) : null;
   await wait(300);
@@ -497,9 +1135,9 @@ async function process(tok) {
   render(tok, px);
 }
 
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 //  SCORING
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 function score(tok, px) {
   const org   = tok.organicScore ?? null;
   const isSus = !!(tok.audit && tok.audit.isSus) || !!(tok.tags && tok.tags.includes('suspicious'));
@@ -526,14 +1164,13 @@ function score(tok, px) {
   return { isPraise: s >= 2, s, isSus, isVer, org, pc, vol24 };
 }
 
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 //  RENDER
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 function render(tok, px) {
   const v    = score(tok, px);
   const mint = tok.id || tok.address || '';
 
-  // Avatar
   const av  = document.getElementById('c-av');
   const sym = (tok.symbol || '?').slice(0, 4).toUpperCase();
   const src = tok.icon || '';
@@ -543,7 +1180,27 @@ function render(tok, px) {
 
   document.getElementById('c-name').textContent   = tok.name || tok.symbol || 'Unknown';
   document.getElementById('c-ticker').textContent  = tok.symbol ? `$${tok.symbol}` : '';
-  document.getElementById('c-mint').textContent    = mint ? short(mint) : '';
+
+  const mintEl  = document.getElementById('c-mint');
+  const copyBtn = document.getElementById('c-copy');
+  if (mint) {
+    mintEl.textContent   = short(mint);
+    copyBtn.style.display = 'inline-flex';
+    copyBtn.onclick = function() {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(mint).then(() => flashCopy(copyBtn));
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = mint; document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); ta.remove(); flashCopy(copyBtn);
+        }
+      } catch(_) {}
+    };
+  } else {
+    mintEl.textContent    = '';
+    copyBtn.style.display = 'none';
+  }
 
   let usd = null;
   if (px && px.usdPrice != null) usd = px.usdPrice;
@@ -577,9 +1234,7 @@ function render(tok, px) {
     sf.style.background = pct >= 70 ? 'var(--acc)' : pct >= 40 ? 'var(--amber)' : 'var(--fire)';
     setTimeout(() => { sf.style.width = pct + '%'; }, 60);
   } else {
-    sn.textContent = 'N/A';
-    sn.style.color = 'var(--tx-sec)';
-    sf.style.width = '0%';
+    sn.textContent = 'N/A'; sn.style.color = 'var(--tx-sec)'; sf.style.width = '0%';
   }
 
   const vTag = document.getElementById('v-tag');
@@ -596,24 +1251,23 @@ function render(tok, px) {
 
   const fl = document.getElementById('flags');
   const pills = [];
-  if (v.isSus)      pills.push(['pill-sus', '⚠ Suspicious']);
-  if (tok.isStrict) pills.push(['pill-ok',  '✓ Strict List']);
-  else if (v.isVer) pills.push(['pill-ok',  '✓ Verified']);
+  if (v.isSus)      pills.push(['pill-sus', 'WARNING Suspicious']);
+  if (tok.isStrict) pills.push(['pill-ok',  'OK Strict List']);
+  else if (v.isVer) pills.push(['pill-ok',  'OK Verified']);
   if (tok.audit) {
-    if (tok.audit.mintAuthorityDisabled === false)   pills.push(['pill-warn', 'Mint Auth Active']);
-    if (tok.audit.mintAuthorityDisabled === true)    pills.push(['pill-info', 'Mint Auth Revoked']);
-    if (tok.audit.freezeAuthorityDisabled === false)  pills.push(['pill-warn', 'Freeze Auth Active']);
-    if (tok.audit.freezeAuthorityDisabled === true)   pills.push(['pill-info', 'Freeze Auth Revoked']);
+    if (tok.audit.mintAuthorityDisabled === false)  pills.push(['pill-warn', 'Mint Auth Active']);
+    if (tok.audit.mintAuthorityDisabled === true)   pills.push(['pill-info', 'Mint Auth Revoked']);
+    if (tok.audit.freezeAuthorityDisabled === false) pills.push(['pill-warn', 'Freeze Auth Active']);
+    if (tok.audit.freezeAuthorityDisabled === true)  pills.push(['pill-info', 'Freeze Auth Revoked']);
     if (tok.audit.topHoldersPercentage != null && tok.audit.topHoldersPercentage > 40)
       pills.push(['pill-warn', `Top 10 hold ${tok.audit.topHoldersPercentage.toFixed(0)}%`]);
   }
-  // Derive more flags from top-level fields if audit object is sparse
-  if (tok.freeze_authority)     pills.push(['pill-warn', 'Freeze Auth Active']);
-  if (tok.mint_authority)       pills.push(['pill-warn', 'Mint Auth Active']);
-  if (tok.permanent_delegate)   pills.push(['pill-sus',  'Permanent Delegate']);
+  if (tok.freeze_authority)   pills.push(['pill-warn', 'Freeze Auth Active']);
+  if (tok.mint_authority)     pills.push(['pill-warn', 'Mint Auth Active']);
+  if (tok.permanent_delegate) pills.push(['pill-sus',  'Permanent Delegate']);
   if (v.org != null && v.org < 20) pills.push(['pill-sus', 'Bot Heavy']);
   if (tok.holderCount != null && tok.holderCount < 100) pills.push(['pill-warn', '< 100 Holders']);
-  // Deduplicate pills by label
+
   const seen = new Set();
   const unique = pills.filter(([,l]) => { if (seen.has(l)) return false; seen.add(l); return true; });
   fl.innerHTML = unique.map(([c, l]) => `<span class="pill ${c}">${l}</span>`).join('');
@@ -622,24 +1276,45 @@ function render(tok, px) {
   wireShare(tok, v, vMsg.textContent);
 }
 
+// ─────────────────────────────────────────────────────────
+//  COPY FLASH
+// ─────────────────────────────────────────────────────────
+function flashCopy(btn) {
+  btn.classList.add('copied');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  }, 1800);
+}
+
+// ─────────────────────────────────────────────────────────
+//  SHARE -- 280 char safe, dynamic verb
+// ─────────────────────────────────────────────────────────
 function wireShare(tok, v, msg) {
   const ticker  = tok.symbol ? `$${tok.symbol}` : 'this token';
   const orgLine = v.org != null ? `Organic Score: ${v.org.toFixed(0)}/100. ` : '';
   const emoji   = v.isPraise ? '🟩' : '🔥';
   const verdict = v.isPraise ? 'CHAD BAG DETECTED' : 'FULLY COOKED';
-  const snippet = msg.length > 120 ? msg.slice(0, 120) + '…' : msg;
-  const tweet =
-    `${emoji} ${ticker} just got roasted by the Degen Roast Machine.\n` +
-    `${orgLine}Verdict: ${verdict}\n\n` +
-    `"${snippet}"\n\n` +
-    `How cooked is YOUR bag? 👇\nhttps://compoundingly.com/tools/degen-roast/`;
+  const verb    = v.isPraise ? 'just got checked' : 'just got roasted';
+  const maxSnip = v.isPraise ? 111 : 112;
+  const snippet = msg.length > maxSnip ? msg.slice(0, maxSnip) + '...' : msg;
+  const url     = 'https://compoundingly.com/tools/degen-roast/';
+  const body    = `${emoji} ${ticker} ${verb} by the Compoundingly Roast Machine.\n${orgLine}Verdict: ${verdict}\n\n"${snippet}"\n\nHow cooked is YOUR bag? 👇\n`;
+  const total   = xLen(body) + 23;
+  let finalBody = body;
+  if (total > 280) {
+    const over    = total - 280;
+    const trimmed = msg.slice(0, Math.max(0, maxSnip - over)) + '...';
+    finalBody = `${emoji} ${ticker} ${verb} by the Compoundingly Roast Machine.\n${orgLine}Verdict: ${verdict}\n\n"${trimmed}"\n\nHow cooked is YOUR bag? 👇\n`;
+  }
   document.getElementById('btn-share').onclick = () =>
-    window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(tweet), '_blank', 'noopener,noreferrer');
+    window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(finalBody + url), '_blank', 'noopener,noreferrer');
 }
 
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 //  LOADER HELPERS
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 async function load(lines) {
   hideCard(); hideErr();
   const term = document.getElementById('term');
@@ -647,7 +1322,7 @@ async function load(lines) {
   lines.forEach(txt => {
     const d = document.createElement('div');
     d.className = 'tline';
-    d.innerHTML = `<span class="p">›</span> ${txt} <span class="spin">⠋</span>`;
+    d.innerHTML = `<span class="p">&#x203A;</span> ${txt} <span class="spin">&#x22CB;</span>`;
     term.appendChild(d);
   });
   document.getElementById('loader').classList.add('on');
@@ -665,7 +1340,7 @@ function hideCard() {
   document.getElementById('card').className = '';
   document.getElementById('s-fill').style.width = '0%';
 }
-function showErr(m) { const e = document.getElementById('err'); e.textContent = '⚠ ' + m; e.classList.add('on'); }
+function showErr(m) { const e = document.getElementById('err'); e.textContent = 'WARNING ' + m; e.classList.add('on'); }
 function hideErr()  { document.getElementById('err').classList.remove('on'); }
 function reset() {
   hideCard(); hideErr(); hideDD(); hideLoad();
@@ -674,11 +1349,10 @@ function reset() {
   currentTok = null;
 }
 
-// ─────────────────────────────────────────
-//  LIVE DROPDOWN WHILE TYPING
-//  Uses the same v2/search endpoint with a 350ms debounce
-//  so we don't hammer the API on every keystroke.
-// ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  LIVE DROPDOWN WHILE TYPING (ticker search only)
+//  Skips debounce for domain/wallet -- those need ROAST IT
+// ─────────────────────────────────────────────────────────
 document.getElementById('q').addEventListener('keydown', e => {
   if (e.key === 'Enter') go();
   if (e.key === 'Escape') hideDD();
@@ -688,26 +1362,36 @@ document.getElementById('q').addEventListener('input', e => {
   const val = e.target.value.trim();
   clearTimeout(debounce);
   if (!val || val.length < 2) { hideDD(); return; }
-  if (isMint(val)) { hideDD(); return; } // mint address → skip dropdown
+  // Skip live search for domains and wallet addresses
+  if (isDomain(val) || isMint(val)) { hideDD(); return; }
 
   debounce = setTimeout(async () => {
     const current = document.getElementById('q').value.trim();
-    if (!current || current.length < 2 || isMint(current)) return;
-    showDDSearching();
+    if (!current || current.length < 2 || isDomain(current) || isMint(current)) return;
+    showDDSearching('Searching Jupiter...');
     try {
       const results = (await searchJupiter(current)).map(normalise);
-      // Make sure the input hasn't changed while we awaited
       if (document.getElementById('q').value.trim() !== current) return;
-      if (results.length) renderDD(results);
+      if (results.length) renderDD(results, null);
       else hideDD();
     } catch { hideDD(); }
-  }, 350); // 350ms debounce — respectful to the API, still feels snappy
+  }, 350);
 });
 
 document.addEventListener('click', e => {
   if (!document.getElementById('dd').contains(e.target) &&
       e.target !== document.getElementById('q')) hideDD();
 });
+
+// ─────────────────────────────────────────────────────────
+//  SERVICE WORKER REGISTRATION
+// ─────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .catch(err => console.warn('[SW] Registration failed:', err));
+  });
+}
 </script>
 </body>
 </html>
